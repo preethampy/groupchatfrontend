@@ -8,6 +8,16 @@ import toast from 'react-hot-toast';
 import { Toaster } from 'react-hot-toast';
 import styles from ".././styles/cs.module.css";
 
+/**
+ * @param {prop} type - A prop with name of page (Signup and Login page) as value from where this component is been called. 
+ * @returns {Form} - Based on page (Signup and Login page) calling this component this function component will return a Form encapsulated
+ * inside Container and div with necessary fields. This also handles below mentioned points:
+ * 1) Sending login/signup requests to backend.
+ * 2) Storing jwt, user id, username in redux store, localstorage returned from backend.
+ * 3) Showing any errors sent from backend.
+ * 4) Redirecting users to Authenticated/Private pages on valid authentication.
+ */
+
 export default function AuthCard({type}) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -28,7 +38,7 @@ export default function AuthCard({type}) {
         "password": password
       }).then((resp) => {
         if(resp.data.jwt){
-            dispatch(setAuthDetails({ jwt: resp.data.jwt }));
+            dispatch(setAuthDetails({ jwt: resp.data.jwt, uid: resp.data.uid, name: resp.data.name}));
             localStorage.setItem("jwt", resp.data.jwt);
             localStorage.setItem("uid", resp.data.uid);
             localStorage.setItem("name", resp.data.name);
@@ -40,6 +50,7 @@ export default function AuthCard({type}) {
         }
       }).catch((err) => {
         console.log(err);
+                toast.error(err.response.data.message)
       })
     }
   return (

@@ -37,7 +37,7 @@
 
 
 .chatCard{
-    background-color: transparent;
+    background-color: #e9e6ef;
     border: 0;
     height: 100%;
 }
@@ -56,10 +56,16 @@
 
 .chatBold{
     font-weight: bold;
+    font-size: xx-large;
 }
 
 .chatScroll{
     overflow-x: scroll;
+    border-left-width: 20px;
+    border-right-width: 20px;
+    border-bottom-width: 10px;
+    border-style: solid;
+    border-color: rgb(227, 224, 232);
 }
 
 .chatChip{
@@ -98,8 +104,10 @@
     background-color: #27005d;
     color: white;
     padding: 10px;
-    border-radius: 100px;
+    border-radius: 70px;
     font-weight: bold;
+    margin: auto;
+    text-decoration: none;
 }
 
 .mainWidthAuto{
@@ -111,7 +119,7 @@ text-align: end;
 }
 
 .mainHei90{
-height: 90%;
+height: 93vh;
 }
 
 .mainCard{
