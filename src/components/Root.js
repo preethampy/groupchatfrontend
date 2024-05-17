@@ -40,7 +40,21 @@ export default function Root() {
 
         socket.on("room-joined-new", (data) => {
             dispatch(addNewGroupToMyGroupsData({ newGroup: data }))
-        })
+        });
+
+        socket.on("wait",(data)=>{
+            fetchAndSetGroups();
+            alert(data.message);
+        });
+
+        socket.on("join-request-received",()=>{
+            fetchAndSetGroups();
+
+        });
+
+        socket.on("join-request-approved",()=>{
+            fetchAndSetGroups()
+        });
     }, [socket])
 
     /**
@@ -57,7 +71,7 @@ export default function Root() {
             request("post", "group/get")
                 .then((resp) => {
                     setGroups(resp.data.groups);
-                    dispatch(setGroupsData({ groups: resp.data.groups, myGroups: resp.data.myGroups }));
+                    dispatch(setGroupsData({ groups: resp.data.groups, myGroups: resp.data.myGroups, myPendingGroups:resp.data.myPendingGroups }));
                     resolve(true);
 
                 })

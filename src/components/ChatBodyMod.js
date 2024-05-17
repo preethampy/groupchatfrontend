@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Container, Stack, Card, Form, Button, Spinner } from 'react-bootstrap'
+import { Container, Stack, Card, Form, Button, Spinner, Modal } from 'react-bootstrap'
 import { IoSend } from "react-icons/io5";
 import { IoIosAttach } from "react-icons/io";
 import { BiSolidMessageDots } from "react-icons/bi";
@@ -8,9 +8,12 @@ import store from '../app/store';
 import { Chip } from '@mui/material';
 import config from '../config';
 import { FaArrowAltCircleDown } from "react-icons/fa";
+import { IoPersonAddSharp } from "react-icons/io5";
+import { FaCheck } from "react-icons/fa";
+import { ImCross } from "react-icons/im";
 import { useState } from 'react';
 import { socket } from '../Socketio';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import styles from ".././styles/cs.module.css";
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -24,10 +27,15 @@ export default function ChatBodyMod() {
     const state = useSelector((state) => state.groups);
 
     const [group, setGroup] = useState();
+    const [pending, setPending] = useState();
     const [isReady, setIsReady] = useState();
     const [fileToSend, setFileToSend] = useState(null);
     const [showFileInput, setShowFileInput] = useState(false);
     const [myMessage, setMyMessage] = useState("");
+    const [show, setShow] = useState(false);
+
+    const handleClose = () => setShow(false);
+    const handleShow = () => setShow(true);
 
     const fileRef = useRef(null)
     const divRef = useRef(null)
@@ -40,7 +48,11 @@ export default function ChatBodyMod() {
 
     function commonFunc() {
         const myGroups = store.getState().groups.myGroups;
+        const myPendingGroups = store.getState().groups.myPendingGroups;
         const group = myGroups.find((obj) => obj._id === id);
+        const pendingGroup = myPendingGroups.find((obj) => obj._id === id);
+
+        setPending(pendingGroup);
         setGroup(group);
         setIsReady(true)
     }
@@ -127,10 +139,19 @@ export default function ChatBodyMod() {
         fileRef.current.value = null
     }
 
+    function acceptHandler(id) {
+        socket.emit("approve-join", {
+            groupId: group._id,
+            userId: id
+        });
+        handleClose();
+    }
+
     // If isReady is true and group is not undefined (means we already joined this group) then we return this
     if (isReady && group) {
         return (
             <div className={styles.mainHei90}>
+                <Toaster />
                 <Card className={styles.chatCard}>
                     <Card.Header className={styles.chatNoBorder}>
                         <Stack direction='horizontal' style={{ justifyContent: "space-between" }}>
@@ -140,7 +161,12 @@ export default function ChatBodyMod() {
                                     Created by {group.created_by.name}.
                                 </Card.Subtitle>
                             </div>
-                            <Button onClick={scrollToBottom} style={{ backgroundColor: "transparent", borderColor: "transparent" }}><FaArrowAltCircleDown size={25} color='#27005d' /></Button>
+                            <div>
+                                {authDetails.auth.name == group.created_by.name &&
+                                    <Button onClick={handleShow} style={{ backgroundColor: "transparent", borderColor: "transparent" }}><IoPersonAddSharp size={22} color='#27005d' /></Button>
+                                }
+                                <Button onClick={scrollToBottom} style={{ backgroundColor: "transparent", borderColor: "transparent" }}><FaArrowAltCircleDown size={25} color='#27005d' /></Button>
+                            </div>
                         </Stack>
                     </Card.Header>
                     <Card.Body className={styles.chatScroll}>
@@ -180,11 +206,34 @@ export default function ChatBodyMod() {
                         </Form>
                     </Card.Footer>
                 </Card>
+
+                <Modal show={show} onHide={handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Join Requests</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body className='m-auto'>
+                        {
+                            group.requests.length == 0 &&
+
+                            <p>No join requests</p>
+                        }
+                        {group.requests.map((item, index) => {
+                            return <p>
+                                <Stack gap={"3"} direction='horizontal'>
+                                    <div><span style={{ fontWeight: "bold" }}>{item.name}</span> wants to joint this group. </div>
+                                    <FaCheck style={{ cursor: "pointer", color: "#27005d" }} onClick={() => { acceptHandler(item._id) }} size={20} />
+                                    <ImCross style={{ cursor: "pointer", color: "#27005d" }} onClick={handleClose} size={18} />
+                                </Stack>
+                            </p>
+                        })}
+
+                    </Modal.Body>
+                </Modal>
             </div>
         )
     }
     // If isReady is true and but group is undefined (means we didn't join this group) then we return this
-    else if (isReady && !group) {
+    else if (isReady && !group && !pending) {
         return <Container className={styles.mainContainer} fluid>
             <div className={styles.mainHei90}>
                 <Card className={styles.mainCard}>
@@ -192,6 +241,15 @@ export default function ChatBodyMod() {
                         Join
                     </Button>
                     <h5>Please join group first</h5>
+                </Card>
+            </div>
+        </Container>
+    }
+    else if (isReady && pending) {
+        return <Container className={styles.mainContainer} fluid>
+            <div className={styles.mainHei90}>
+                <Card className={styles.mainCard}>
+                    <h5>Request pending! Please wait till owner of this group accepts your request.</h5>
                 </Card>
             </div>
         </Container>

@@ -5,11 +5,13 @@ export const groupsSlice = createSlice({
     initialState: {
         groups: [],
         myGroups: [],
+        myPendingGroups: []
     },
     reducers: {
         setGroupsData: (state, action) => {
             state.groups = action.payload.groups;
             state.myGroups = action.payload.myGroups;
+            state.myPendingGroups = action.payload.myPendingGroups;
         },
         addNewMessageToGroupData:(state,action) => {
             state.myGroups = state.myGroups.map((gr, index) => {
@@ -22,7 +24,6 @@ export const groupsSlice = createSlice({
                 }
             });
         },
-
         addNewGroupToMyGroupsData:(state,action) => {
             state.myGroups = [...state.myGroups,action.payload.newGroup]
         },
