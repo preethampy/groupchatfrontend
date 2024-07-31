@@ -55,6 +55,10 @@ export default function Root() {
         socket.on("join-request-approved",()=>{
             fetchAndSetGroups()
         });
+
+        socket.on("join-request-rejected",()=>{
+            fetchAndSetGroups();
+        });
     }, [socket])
 
     /**

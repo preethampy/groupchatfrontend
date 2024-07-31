@@ -51,7 +51,6 @@ export default function ChatBodyMod() {
         const myPendingGroups = store.getState().groups.myPendingGroups;
         const group = myGroups.find((obj) => obj._id === id);
         const pendingGroup = myPendingGroups.find((obj) => obj._id === id);
-
         setPending(pendingGroup);
         setGroup(group);
         setIsReady(true)
@@ -78,7 +77,7 @@ export default function ChatBodyMod() {
             commonFunc();
             unsubscribe();
         }
-    }, [id, state])
+    }, [id, state, socket])
 
     /**
      * This function will be called when user wants to join a new group.
@@ -141,6 +140,14 @@ export default function ChatBodyMod() {
 
     function acceptHandler(id) {
         socket.emit("approve-join", {
+            groupId: group._id,
+            userId: id
+        });
+        handleClose();
+    }
+
+    function rejectHandler(id) {
+        socket.emit("reject-join", {
             groupId: group._id,
             userId: id
         });
@@ -219,10 +226,10 @@ export default function ChatBodyMod() {
                         }
                         {group.requests.map((item, index) => {
                             return <p>
-                                <Stack gap={"3"} direction='horizontal'>
+                                <Stack gap={"3"} direction='horizontal' key={index}>
                                     <div><span style={{ fontWeight: "bold" }}>{item.name}</span> wants to joint this group. </div>
                                     <FaCheck style={{ cursor: "pointer", color: "#27005d" }} onClick={() => { acceptHandler(item._id) }} size={20} />
-                                    <ImCross style={{ cursor: "pointer", color: "#27005d" }} onClick={handleClose} size={18} />
+                                    <ImCross style={{ cursor: "pointer", color: "#27005d" }} onClick={()=>{rejectHandler(item._id)}} size={18} />
                                 </Stack>
                             </p>
                         })}
